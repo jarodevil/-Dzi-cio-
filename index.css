@@ -1,0 +1,100 @@
+
+/* ADK Production Studio - Visual Overhaul */
+:root {
+    --bg-deep: #050507;
+    --a2a-color: #0070f3;
+    --mcp-color: #10b981;
+    --infra-color: #8b5cf6;
+    --remote-color: #f43f5e;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+}
+
+.production-studio {
+    background: var(--bg-deep);
+    color: #fff;
+    overflow: hidden;
+}
+
+.workflow-node {
+    width: 240px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: rgba(10, 10, 15, 0.9);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.workflow-node:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 112, 243, 0.2);
+}
+
+.port-tag {
+    font-size: 0.6rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    margin-left: auto;
+}
+
+.node-url-badge {
+    font-size: 0.6rem;
+    color: var(--remote-color);
+    margin-top: 8px;
+    background: rgba(244, 63, 94, 0.1);
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.edge-line.a2a-flow {
+    stroke-dasharray: 5, 5;
+    animation: flow 20s linear infinite;
+    stroke-width: 2;
+    stroke: var(--a2a-color);
+    opacity: 0.4;
+}
+
+@keyframes flow {
+    from { stroke-dashoffset: 200; }
+    to { stroke-dashoffset: 0; }
+}
+
+.cmd-group {
+    margin-bottom: 16px;
+}
+
+.cmd-group label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cli-block.accent {
+    border-color: var(--a2a-color);
+    box-shadow: 0 0 15px rgba(0, 112, 243, 0.2);
+}
+
+.file-entry {
+    margin-bottom: 24px;
+}
+
+.file-entry h4 {
+    font-size: 0.8rem;
+    color: var(--a2a-color);
+    margin-bottom: 8px;
+}
+
+.code-block {
+    background: #000;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    line-height: 1.5;
+}
