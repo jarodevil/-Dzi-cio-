@@ -34,11 +34,18 @@ export interface ContextCacheConfig {
   cache_intervals: number;
 }
 
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  parameters: string; // Simplified JSON string representation of params
+}
+
 export interface NodeMetadata {
   endpoint_url?: string;
   port?: number;
   files?: AgentFile[];
   agent_card?: any;
+  tool_definitions?: ToolDefinition[];
   cache_config?: ContextCacheConfig;
   plugin_config?: {
     retry_count?: number;
