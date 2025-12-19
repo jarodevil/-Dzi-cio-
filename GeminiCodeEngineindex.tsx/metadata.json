@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Code Engine Module",
+  "description": "Przenośny moduł do wykonywania kodu Python przez Gemini, gotowy do integracji z innymi asystentami.",
+  "requestFramePermissions": []
+}

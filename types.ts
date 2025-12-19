@@ -15,6 +15,13 @@ export type NodeType =
 
 export type ProtocolType = 'A2A' | 'MCP' | 'ADK_INTERNAL';
 
+export interface MemoryStats {
+  persistent_usage: number; // KB
+  buffer_usage: number; // items
+  noise_level: number; // 0-100
+  is_locked: boolean;
+}
+
 export interface AgentFile {
   name: string;
   content: string;
@@ -37,7 +44,7 @@ export interface ContextCacheConfig {
 export interface ToolDefinition {
   name: string;
   description: string;
-  parameters: string; // Simplified JSON string representation of params
+  parameters: string;
 }
 
 export interface NodeMetadata {
@@ -51,11 +58,6 @@ export interface NodeMetadata {
     retry_count?: number;
     learning_scope?: 'global' | 'session';
     instruction_set?: string;
-  };
-  config?: {
-    port: number;
-    a2a_enabled: boolean;
-    session_uri: string;
   };
 }
 
@@ -88,15 +90,10 @@ export interface AgentWorkflow {
   edges: WorkflowEdge[];
 }
 
-export interface SystemStatus {
-  adk_installed: boolean;
-  python_version: string;
-  active_ports: number[];
-}
-
 export interface Session {
   id: string;
   prompt: string;
   timestamp: number;
   workflow: AgentWorkflow | null;
+  is_protected: boolean;
 }
