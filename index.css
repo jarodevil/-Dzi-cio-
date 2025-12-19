@@ -6,6 +6,9 @@
     --mcp-color: #10b981;
     --infra-color: #8b5cf6;
     --remote-color: #f43f5e;
+    --learning-color: #10b981;
+    --reflection-color: #8b5cf6;
+    --tool-color: #f59e0b;
     --border-subtle: rgba(255, 255, 255, 0.08);
 }
 
@@ -19,14 +22,40 @@
     width: 240px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    background: rgba(10, 10, 15, 0.9);
+    background: rgba(10, 10, 15, 0.95);
     border-radius: 8px;
     padding: 12px;
+    position: absolute;
+    border: 1px solid var(--border-subtle);
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .workflow-node:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 112, 243, 0.2);
+    z-index: 10;
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.node-icon-inline {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.node-type-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
 }
 
 .port-tag {
@@ -35,6 +64,28 @@
     padding: 2px 4px;
     border-radius: 3px;
     margin-left: auto;
+}
+
+.node-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.node-desc {
+    font-size: 0.75rem;
+    opacity: 0.6;
+    line-height: 1.3;
+}
+
+.plugin-meta-badge {
+    margin-top: 10px;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .node-url-badge {
@@ -47,39 +98,142 @@
     border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
-.edge-line.a2a-flow {
-    stroke-dasharray: 5, 5;
-    animation: flow 20s linear infinite;
-    stroke-width: 2;
-    stroke: var(--a2a-color);
-    opacity: 0.4;
+/* Edge Visualization */
+.edge-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
 }
 
-@keyframes flow {
-    from { stroke-dashoffset: 200; }
+.edge-group {
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.edge-click-target {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 20;
+}
+
+.edge-path {
+    fill: none;
+    stroke-width: 2;
+    transition: stroke-width 0.2s, stroke 0.2s, filter 0.2s;
+}
+
+.edge-group.selected .edge-path {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 5px currentColor);
+}
+
+.edge-path.a2a-flow {
+    stroke-dasharray: 10, 5;
+    animation: flow-anim 30s linear infinite;
+}
+
+.edge-path.plugin-flow {
+    stroke-dasharray: 5, 5;
+    animation: flow-anim 15s linear infinite;
+}
+
+@keyframes flow-anim {
+    from { stroke-dashoffset: 500; }
     to { stroke-dashoffset: 0; }
 }
 
-.cmd-group {
-    margin-bottom: 16px;
+.status-badge {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin-right: 8px;
+    font-weight: 600;
 }
 
-.cmd-group label {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-    display: block;
-    text-transform: uppercase;
+.status-badge.reflection {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-badge.learning {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cache-config-chip {
+    margin-top: 12px;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.cache-header {
+    font-size: 0.55rem;
+    font-weight: 800;
+    color: #f59e0b;
+    margin-bottom: 6px;
     letter-spacing: 1px;
+}
+
+.cache-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.cache-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.cache-item span {
+    font-size: 0.5rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.cache-item strong {
+    font-size: 0.65rem;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.cache-overview-drawer {
+    background: #111;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+    margin-bottom: 24px;
+}
+
+.hint {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 10px;
+    font-style: italic;
+}
+
+.cli-block {
+    background: #000;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    line-height: 1.5;
+    margin-bottom: 8px;
 }
 
 .cli-block.accent {
     border-color: var(--a2a-color);
     box-shadow: 0 0 15px rgba(0, 112, 243, 0.2);
-}
-
-.file-entry {
-    margin-bottom: 24px;
 }
 
 .file-entry h4 {
@@ -97,4 +251,25 @@
     overflow-x: auto;
     border: 1px solid var(--border-subtle);
     line-height: 1.5;
+}
+
+.protocol-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: var(--a2a-color);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.flow-description {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.edge-meta {
+    font-size: 0.8rem;
+    opacity: 0.6;
 }
