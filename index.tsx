@@ -20,11 +20,10 @@ import ReactFlow, {
     Panel
 } from 'reactflow';
 
-import { Session, MemoryStats } from './types';
+import { Session, MemoryStats, WorkLogEntry, SystemStateSnapshot } from './types';
 import { generateId } from './utils';
 
 import SideDrawer from './components/SideDrawer';
-// Added RegistryIcon to the import list below
 import { 
     ArrowUpIcon, 
     NetworkIcon,
@@ -36,104 +35,62 @@ import {
     RegistryIcon
 } from './components/Icons';
 
-// --- Custom Node Component for ReactFlow ---
-const WorkflowNodeComponent = ({ data }: { data: { label: string, description: string, type: string } }) => {
-    return (
-        <div className="custom-flow-node">
-            <div className="node-header">
-                <CodeIcon />
-                <span className="node-type-badge">{data.type}</span>
-            </div>
-            <div className="node-body">
-                <h3>{data.label}</h3>
-                <p>{data.description}</p>
-            </div>
-        </div>
-    );
-};
+// --- Komponenty Specjalistyczne ---
 
-const nodeTypes = {
-    workflowNode: WorkflowNodeComponent,
-};
-
-// --- Dashboard Components ---
-
-const MemoryMonitor = ({ stats, onCleanup }: { stats: MemoryStats, onCleanup: () => void }) => {
-    return (
-        <div className="dashboard-panel">
-            <div className="panel-header">
-                <h3><ShieldIcon/> Zarządzanie Pamięcią i CLM</h3>
-                <span className={`live-badge ${stats.is_locked ? 'locked' : ''}`}>
-                    {stats.is_locked ? 'BRAMKA ZABLOKOWANA' : 'SESJA OTWARTA'}
-                </span>
-            </div>
-            <div className="memory-stats">
-                <div className="stat-row">
-                    <span>Magazyn Trwały (Hard-Save)</span>
-                    <span>{stats.persistent_usage} KB</span>
-                </div>
-                <div className="gauge-container">
-                    <div className="gauge-fill" style={{ width: `${Math.min(100, stats.persistent_usage / 5)}%` }}></div>
-                </div>
-                
-                <div className="stat-row" style={{ marginTop: 12 }}>
-                    <span>Dynamiczny Bufor Operacyjny</span>
-                    <span>{stats.buffer_usage} obj.</span>
-                </div>
-                <div className="gauge-container">
-                    <div className="gauge-fill buffer" style={{ width: `${Math.min(100, stats.buffer_usage * 2)}%` }}></div>
-                </div>
-
-                <div className="stat-row" style={{ marginTop: 12 }}>
-                    <span>Poziom Szumu Komunikacyjnego</span>
-                    <span style={{ color: stats.noise_level > 70 ? 'var(--danger-accent)' : 'inherit' }}>
-                        {stats.noise_level}%
-                    </span>
-                </div>
-                
-                <button 
-                    className="cleanup-btn" 
-                    onClick={onCleanup}
-                    disabled={stats.noise_level < 10}
-                >
-                    Dekontaminacja Szumu (Flush Temp)
-                </button>
-            </div>
-        </div>
-    );
-};
-
-const PythonRuntimeMonitor = ({ lastExecution }: { lastExecution?: { code: string, result: string } }) => (
+const WorkLogPanel = ({ logs }: { logs: WorkLogEntry[] }) => (
     <div className="dashboard-panel">
         <div className="panel-header">
-            <h3><CodeIcon/> Silnik Gemini Python</h3>
-            <span className="live-badge sys">RUNNING</span>
+            <h3><RegistryIcon/> Wektor Pracy (Log Systemowy)</h3>
+            <span className="live-badge sys">REALTIME</span>
         </div>
-        <div className="terminal-mini">
-            {lastExecution ? (
-                <>
-                    <div style={{color: '#8b5cf6', fontSize: '0.7rem'}}># Python Source:</div>
-                    <code>{lastExecution.code}</code>
-                    <div style={{color: '#10b981', marginTop: 10, borderTop: '1px solid #333', fontSize: '0.7rem'}}># Output:</div>
-                    <code>{lastExecution.result}</code>
-                </>
+        <div className="log-viewer">
+            {logs.length === 0 ? (
+                <div className="log-empty">Brak aktywnych logów w wektorze.</div>
             ) : (
-                <code style={{opacity: 0.5}}>Czekam na zadanie obliczeniowe...</code>
+                logs.slice().reverse().map(log => (
+                    <div key={log.id} className={`log-entry ${log.type.toLowerCase()}`}>
+                        <span className="log-time">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                        <span className="log-msg">[{log.type}] {log.message}</span>
+                    </div>
+                ))
             )}
         </div>
     </div>
 );
 
-const KnowledgeHub = () => (
-    <div className="dashboard-panel full-span">
+const DockerWorkspaceManager = () => (
+    <div className="dashboard-panel">
         <div className="panel-header">
-            <h3><NetworkIcon/> Knowledge Gate & Integracje</h3>
+            <h3><CodeIcon/> Docker Workspace (Local Disk)</h3>
+            <span className="live-badge sys">VIRTUAL MOUNT</span>
         </div>
-        <div className="hub-grid">
-            <a href="https://drive.google.com" target="_blank" className="hub-card"><span>Google Drive (API)</span></a>
-            <a href="https://gemini.google.com" target="_blank" className="hub-card"><span>Gemini Advanced</span></a>
-            <div className="hub-card sys"><span>Vector Store: IndexedDB</span></div>
+        <div className="docker-controls">
+            <div className="stat-row"><span>Status Środowiska:</span> <span className="status-pill active">Ready</span></div>
+            <div className="mount-path">
+                <code>/home/user/Dzi-cio/workspace</code>
+            </div>
+            <div className="vfs-tree">
+                <div className="vfs-item">📁 containers/</div>
+                <div className="vfs-item">📁 mounts/data</div>
+                <div className="vfs-item">📄 docker-compose.yml</div>
+            </div>
         </div>
+    </div>
+);
+
+const ArchitectAdvisor = ({ advice }: { advice?: string }) => (
+    <div className="dashboard-panel">
+        <div className="panel-header">
+            <h3><SparklesIcon/> Architect Advisor</h3>
+        </div>
+        <div className="advice-content">
+            {advice ? (
+                <div className="advice-text">{advice}</div>
+            ) : (
+                <div className="advice-placeholder">Analizuję strukturę pod kątem optymalizacji przed-zapisem...</div>
+            )}
+        </div>
+        <div className="risk-level">Wektor stabilności: <span style={{color: 'var(--success-accent)'}}>100%</span></div>
     </div>
 );
 
@@ -144,138 +101,118 @@ function App() {
   const [currentSessionIndex, setCurrentSessionIndex] = useState<number>(-1);
   const [inputValue, setInputValue] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lastExecution, setLastExecution] = useState<{ code: string, result: string } | undefined>(undefined);
-  
-  // React Flow State
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [workLog, setWorkLog] = useState<WorkLogEntry[]>([]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  const currentSession = useMemo(() => sessions[currentSessionIndex], [sessions, currentSessionIndex]);
 
-  // Memory State
   const [memoryStats, setMemoryStats] = useState<MemoryStats>({
       persistent_usage: 0,
       buffer_usage: 0,
-      noise_level: 5,
-      is_locked: false
+      noise_level: 0,
+      is_locked: true,
+      external_sources: [],
+      vfs_health: 100
   });
 
   const [drawerState, setDrawerState] = useState<{
       isOpen: boolean;
-      mode: 'deployment' | 'files' | null;
+      mode: 'deployment' | 'snapshot' | null;
       title: string;
   }>({ isOpen: false, mode: null, title: '' });
 
-  // Update memory stats periodically
-  useEffect(() => {
-    const updateStats = () => {
-        const usage = JSON.stringify(sessions).length / 1024;
-        setMemoryStats(prev => ({
-            ...prev,
-            persistent_usage: Math.round(usage * 10) / 10,
-            buffer_usage: sessions.length + (lastExecution ? 5 : 0),
-            noise_level: Math.min(100, prev.noise_level + (isLoading ? 5 : 0.1))
-        }));
-    };
-    const timer = setInterval(updateStats, 2000);
-    return () => clearInterval(timer);
-  }, [sessions, lastExecution, isLoading]);
+  const addLog = useCallback((message: string, type: WorkLogEntry['type'] = 'INFO') => {
+      setWorkLog(prev => [...prev, {
+          id: generateId(),
+          timestamp: Date.now(),
+          type,
+          message
+      }]);
+  }, []);
 
-  const handleCleanup = () => {
-      setMemoryStats(prev => ({ ...prev, noise_level: 0 }));
-  };
+  useEffect(() => {
+    addLog("Inicjalizacja ADK Core v3.6. Przygotowano mosty Drive i GitHub.", "INFO");
+  }, [addLog]);
+
+  const handleExportState = useCallback(() => {
+    const snapshot: SystemStateSnapshot = {
+        sessions,
+        workLog,
+        memoryStats,
+        version: "3.6-hybrid",
+        exportTimestamp: Date.now()
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snapshot, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `adk_state_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    addLog("Wykonano pełny Snapshot systemu do pliku JSON.", "ACTION");
+  }, [sessions, workLog, memoryStats, addLog]);
 
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim() || isLoading) return;
-    
-    if (memoryStats.noise_level > 90) {
-        alert("Krytyczny poziom szumu! Wykonaj dekontaminację przed kolejnym zadaniem.");
-        return;
-    }
-
     const prompt = inputValue;
     setInputValue('');
     setIsLoading(true);
+    addLog(`Uruchomienie asymilacji: ${prompt.substring(0, 30)}...`, "ACTION");
 
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const response = await ai.models.generateContent({
             model: 'gemini-3-pro-preview',
-            contents: `Wykonaj zadanie projektowe: "${prompt}". 
-            Użyj Python do obliczeń jeśli to konieczne. 
-            Finalną strukturę AgentWorkflow zwróć w JSON. 
-            Język opisowy: POLSKI. Język techniczny: ANGIELSKI.
-            Węzły powinny mieć typ 'workflowNode' dla poprawnego renderowania.`,
+            contents: `Jesteś ADK Hybrid Architect. Zadanie: "${prompt}".
+            Wykorzystaj repo: jarodevil/-Dzi-cio-, 50GB Drive, NotebookLM.
+            Zaprojektuj rozwiązanie z uwzględnieniem zapisu na lokalny dysk (Docker).
+            Format: JSON. Język: PL (opisy), EN (kod).`,
             config: { 
                 tools: [{ codeExecution: {} }],
-                responseMimeType: 'application/json'
+                responseMimeType: 'application/json',
+                systemInstruction: "Działaj jako agent stanowy. Każda Twoja decyzja musi być możliwa do odtworzenia po restarcie systemu."
             }
         });
 
-        const parts = response.candidates?.[0]?.content?.parts || [];
-        const execPart = parts.find(p => p.executableCode);
-        const resPart = parts.find(p => p.codeExecutionResult);
-
-        if (execPart && resPart) {
-            setLastExecution({
-                code: execPart.executableCode!.code,
-                result: resPart.codeExecutionResult!.output
-            });
-        }
-
         const data = JSON.parse(response.text || '{}');
         const newSession: Session = { 
-            id: generateId(), 
-            prompt, 
-            timestamp: Date.now(), 
-            workflow: data,
-            is_protected: true
+            id: generateId(), prompt, timestamp: Date.now(), workflow: data, is_protected: true 
         };
 
         setSessions(prev => [...prev, newSession]);
         setCurrentSessionIndex(sessions.length);
 
-        // Map to React Flow format
-        const rfNodes: Node[] = (data.nodes || []).map((n: any) => ({
+        setNodes((data.nodes || []).map((n: any) => ({
             id: n.id,
             type: 'workflowNode',
-            data: { label: n.label, description: n.description, type: n.type },
-            position: n.position || { x: Math.random() * 400, y: Math.random() * 400 },
-        }));
+            data: { label: n.label, description: n.description, type: n.type, advice: n.metadata?.advice },
+            position: n.position || { x: Math.random() * 300, y: Math.random() * 300 },
+        })));
 
-        const rfEdges: Edge[] = (data.edges || []).map((e: any) => ({
-            id: e.id,
-            source: e.source,
-            target: e.target,
-            animated: true,
-            style: { stroke: '#3b82f6' },
-        }));
-
-        setNodes(rfNodes);
-        setEdges(rfEdges);
+        setEdges((data.edges || []).map((e: any) => ({
+            id: e.id, source: e.source, target: e.target, animated: true, style: { stroke: '#3b82f6' }
+        })));
+        
+        addLog(`Zgenerowano workflow: ${data.name || 'Nowy Projekt'}. Gotowy do zapisu.`, "INFO");
 
     } catch (e) {
-        console.error("ADK Engine Failure:", e);
+        addLog(`Błąd krytyczny wektora: ${e instanceof Error ? e.message : 'Unknown'}`, "CRITICAL");
     } finally {
         setIsLoading(false);
     }
-  }, [inputValue, isLoading, sessions.length, memoryStats.noise_level]);
+  }, [inputValue, isLoading, sessions.length, addLog]);
 
-  const currentSession = sessions[currentSessionIndex];
+  const onNodesChange: OnNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onEdgesChange: OnEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
   return (
     <div className="immersive-app">
         <SideDrawer isOpen={drawerState.isOpen} onClose={() => setDrawerState(s => ({...s, isOpen: false}))} title={drawerState.title}>
             {drawerState.mode === 'deployment' && (
                 <div className="deployment-panel">
-                    <pre className="code-block"><code>{currentSession?.workflow?.deployment_plan.orchestrator_cmd}</code></pre>
+                    <h3>Docker Manifest (Repo: -Dzi-cio-)</h3>
+                    <pre className="code-block"><code>{currentSession?.workflow?.deployment_plan?.docker_compose || "# Czekam na projekt..."}</code></pre>
                 </div>
             )}
         </SideDrawer>
@@ -284,50 +221,49 @@ function App() {
             <div className="hud-group">
                 <div className="system-status-card">
                     <span className="status-indicator"></span>
-                    ADK Visual Core v3.1 [Safety-Locked]
-                </div>
-                <div className="system-search-bar">
-                    <span className="search-icon">🔍</span>
-                    <input type="text" placeholder="Szukaj w bazie wiedzy..." />
+                    ADK HYBRID CORE [V-RESTART READY]
                 </div>
             </div>
             <div className="hud-group">
-                <button className="hud-btn" onClick={() => setMemoryStats(p => ({...p, is_locked: !p.is_locked}))}>
-                    <ShieldIcon /> {memoryStats.is_locked ? 'Pamięć Chroniona' : 'Zwolnij Blokadę'}
+                <button className="hud-btn highlight" onClick={handleExportState}>
+                    <ShieldIcon /> ZAPISZ STAN (EXPORT JSON)
                 </button>
             </div>
         </div>
-        
+
         <div className="builder-canvas">
             {currentSession?.workflow ? (
                 <div className="workflow-canvas-container">
-                    <ReactFlow
-                        nodes={nodes}
-                        edges={edges}
-                        onNodesChange={onNodesChange}
-                        onEdgesChange={onEdgesChange}
-                        nodeTypes={nodeTypes}
-                        fitView
-                    >
-                        <Background color="#1e293b" gap={20} />
+                    <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} nodeTypes={{workflowNode: ({data}: any) => (
+                        <div className="custom-flow-node">
+                            <div className="node-header"><CodeIcon/> <span className="node-type-badge">{data.type}</span></div>
+                            <h3>{data.label}</h3>
+                            <p>{data.description}</p>
+                            {data.advice && <div className="node-advice">💡 {data.advice}</div>}
+                        </div>
+                    )}} fitView>
+                        <Background color="#111" gap={25} />
                         <Controls />
-                        <MiniMap 
-                            nodeColor={(n) => '#3b82f6'} 
-                            maskColor="rgba(0, 0, 0, 0.5)"
-                            style={{ background: '#0a0a0c' }}
-                        />
                         <Panel position="top-right">
-                             <button className="hud-btn" onClick={() => setDrawerState({ isOpen: true, mode: 'deployment', title: 'Manifest Wdrożenia' })}>
-                                 <RegistryIcon /> Manifest
+                             <button className="hud-btn" onClick={() => setDrawerState({ isOpen: true, mode: 'deployment', title: 'Manifest Orchestracji' })}>
+                                 <RegistryIcon /> Deploy Manifest
                              </button>
                         </Panel>
                     </ReactFlow>
                 </div>
             ) : (
                 <div className="dashboard-grid">
-                    <MemoryMonitor stats={memoryStats} onCleanup={handleCleanup} />
-                    <PythonRuntimeMonitor lastExecution={lastExecution} />
-                    <KnowledgeHub />
+                    <WorkLogPanel logs={workLog} />
+                    <DockerWorkspaceManager />
+                    <ArchitectAdvisor advice="Przed restartem systemu zalecane jest wykonanie 'Export JSON' z górnego paska HUD w celu zachowania wektora pracy." />
+                    <div className="dashboard-panel full-span">
+                        <div className="panel-header"><h3><NetworkIcon/> Mosty Wiedzy (External Storage)</h3></div>
+                        <div className="hub-grid">
+                            <div className="hub-card active">GitHub (Asymilacja repo)</div>
+                            <div className="hub-card active">Google Drive (50GB Volume)</div>
+                            <div className="hub-card active">NotebookLM (Knowledge)</div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -337,7 +273,7 @@ function App() {
                 <div className="mode-indicator">{isLoading ? <ThinkingIcon /> : <ChatBubbleIcon />}</div>
                 <input 
                     type="text" className="command-input" 
-                    placeholder={isLoading ? "Renderowanie wizualizacji..." : "Zaprojektuj mesh agentowy (np. 'Mesh logistyczny')..."}
+                    placeholder={isLoading ? "Przetwarzanie danych..." : "Wpisz polecenie (np. 'Zaktualizuj wektor pracy o nowe źródła')..."}
                     value={inputValue} onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                     disabled={isLoading}
