@@ -11,11 +11,12 @@ import { GoogleGenAI } from '@google/genai';
  * GEMINI CODE ENGINE - Klasa pomocnicza do zadań obliczeniowych
  */
 export class GeminiCodeEngine {
-  private ai: any;
+  private ai: GoogleGenAI;
   private modelName: string;
 
-  constructor(apiKey: string, model: string = 'gemini-3-pro-preview') {
-    this.ai = new GoogleGenAI({ apiKey });
+  // Fix: Initialize GoogleGenAI exclusively using process.env.API_KEY.
+  constructor(model: string = 'gemini-3-pro-preview') {
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     this.modelName = model;
   }
 
@@ -27,12 +28,14 @@ export class GeminiCodeEngine {
     const mergedConfig = { ...defaultConfig, ...customConfig };
 
     try {
+      // Fix: Use ai.models.generateContent with model name and prompt.
       const response = await this.ai.models.generateContent({
         model: this.modelName,
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: mergedConfig,
       });
-      return response;
+      // Fix: Return text output by accessing the .text property directly.
+      return response.text;
     } catch (error) {
       console.error("GeminiCodeEngine Execution Error:", error);
       throw error;

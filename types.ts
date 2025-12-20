@@ -7,14 +7,15 @@
 export type NodeType = 
   | 'LLM_REASONER' 
   | 'A2A_REMOTE_AGENT' 
-  | 'ADK_ROOT_SERVER'
-  | 'INFRA_PLUGIN'
-  | 'TOOL_EXECUTOR'
-  | 'STORAGE_BRIDGE'
-  | 'DOCKER_CONTAINER'
-  | 'ARCHITECT_ADVISOR';
+  | 'ADK_ROOT_SERVER' 
+  | 'INFRA_PLUGIN' 
+  | 'TOOL_EXECUTOR' 
+  | 'STORAGE_BRIDGE' 
+  | 'DOCKER_CONTAINER' 
+  | 'ARCHITECT_ADVISOR' 
+  | 'API_GATEWAY';
 
-export type ProtocolType = 'A2A' | 'MCP' | 'DOCKER_VVOL' | 'LOCAL_MOUNT';
+export type ProtocolType = 'A2A' | 'MCP' | 'DOCKER_VVOL' | 'LOCAL_MOUNT' | 'HTTP_REST';
 
 export interface DockerConfig {
   image: string;
@@ -27,9 +28,18 @@ export interface DockerConfig {
 export interface WorkLogEntry {
   id: string;
   timestamp: number;
-  type: 'INFO' | 'ACTION' | 'WARNING' | 'CRITICAL';
+  type: 'INFO' | 'ACTION' | 'WARNING' | 'CRITICAL' | 'VERBOSE' | 'DEBUG';
   message: string;
   vector_hash?: string;
+}
+
+export interface ServerStatus {
+  is_running: boolean;
+  port: number;
+  agents_dir: string;
+  active_agents: number;
+  uptime: number;
+  log_level: 'standard' | 'verbose';
 }
 
 export interface MemoryStats {
@@ -53,6 +63,7 @@ export interface WorkflowNode {
     vfs_path?: string;
     advice?: string;
     repo_url?: string;
+    api_endpoint?: string;
   };
 }
 
@@ -82,10 +93,29 @@ export interface Artifact {
   html: string;
 }
 
+export interface GroundingSource {
+  title: string;
+  uri: string;
+}
+
+export interface ResearchResult {
+  text: string;
+  sources: GroundingSource[];
+  timestamp: number;
+}
+
 export interface SystemStateSnapshot {
   sessions: Session[];
   workLog: WorkLogEntry[];
   memoryStats: MemoryStats;
+  serverStatus: ServerStatus;
   version: string;
   exportTimestamp: number;
+}
+
+export interface LearningMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
 }
